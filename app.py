@@ -2,10 +2,14 @@ import streamlit as st
 import pickle
 import string
 import nltk
+import os
 
-# Only needed once; can be commented out later
-nltk.download('punkt')
-nltk.download('stopwords')
+# Setup: Download and load NLTK data into a custom directory
+nltk_data_path = os.path.join(os.path.expanduser("~"), "nltk_data")
+os.makedirs(nltk_data_path, exist_ok=True)
+nltk.download('punkt', download_dir=nltk_data_path)
+nltk.download('stopwords', download_dir=nltk_data_path)
+nltk.data.path.append(nltk_data_path)  # Ensure NLTK uses this path
 
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
@@ -14,13 +18,11 @@ ps = PorterStemmer()
 # Text cleaning
 def transform_text(text):
     text = text.lower()
-    token = nltk.word_tokenize(text)
-
-    y = [i for i in token if i.isalnum()]
-    y = [i for i in y if i not in stopwords.words('english') and i not in string.punctuation]
-    y = [ps.stem(i) for i in y]
-
-    return " ".join(y)
+    tokens = nltk.word_tokenize(text)
+    tokens = [t for t in tokens if t.isalnum()]
+    tokens = [t for t in tokens if t not in stopwords.words('english') and t not in string.punctuation]
+    tokens = [ps.stem(t) for t in tokens]
+    return " ".join(tokens)
 
 # Load model and vectorizer
 tfidf = pickle.load(open('vectorizer.pkl', 'rb'))
